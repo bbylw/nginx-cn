@@ -5,11 +5,92 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="NGINX 中文官网 — 高性能 Web 服务器、负载均衡器、反向代理、API 网关与内容缓存。基于官方 README 精翻的上手指南与完整文档。" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="NGINX 中文官网 · 高性能 Web 服务器、负载均衡器、反向代理、API 网关与内容缓存。完整配置能力展示与官方模块参考文档。"
+    />
+    <link rel="canonical" href="https://nginx.ndjp.net/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="NGINX 中文官网" />
+    <meta property="og:title" content="NGINX 中文官网 · 高性能 Web 服务器与反向代理" />
+    <meta
+      property="og:description"
+      content="反向代理、负载均衡、内容缓存、请求限流、TLS 卸载与四层转发。一份 nginx.conf 统一编排整条流量链路。"
+    />
+    <meta property="og:url" content="https://nginx.ndjp.net/" />
+    <meta property="og:image" content="https://nginx.ndjp.net/og-cover.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NGINX 中文官网 · 高性能 Web 服务器与反向代理" />
+    <meta
+      name="twitter:description"
+      content="反向代理、负载均衡、内容缓存、请求限流、TLS 卸载与四层转发。"
+    />
+    <meta name="twitter:image" content="https://nginx.ndjp.net/og-cover.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <title>NGINX 中文官网 · 高性能 Web 服务器与反向代理</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "NGINX 为什么能用极少内存撑起高并发连接？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "它采用异步非阻塞的事件驱动架构。单个 worker 进程在 Linux 上通过 epoll、在 BSD 与 macOS 上通过 kqueue 复用大量 socket，连接状态保存在轻量状态机里，不会为每个客户端分配独立线程或栈内存。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "什么时候应该用 proxy_pass，什么时候用 stream 四层代理？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "需要按域名、路径、请求头、Cookie 路由或做内容缓存与限流时，使用 http 块下的 proxy_pass；当流量本身不是 HTTP，例如 MySQL、Redis、gRPC 透传或按 SNI 分流加密连接时，使用 stream 块。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "修改配置后执行平滑重载会断开现有用户连接吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "不会。执行重载命令前先进行语法与证书路径校验；重载时 master 进程会启动加载新配置的 worker 接收新连接，老 worker 则在把在途请求全部响应完毕后优雅退出。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "开源版本身支持 HTTP/3 与 QUIC 吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "支持。NGINX 自 1.25.0 起已将 HTTP/3 与 QUIC 模块合入主线。在同一端口同时开启 SSL 与 QUIC 监听并通过响应头通告协议支持后，客户端即可平滑升级或自动回退到 HTTP/2。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "需要限流或缓存时，必须额外引入 Redis 或 Varnish 吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "单机或单实例边缘节点不需要。limit_req_zone 与 proxy_cache 直接将限流桶计数与缓存索引保存在共享内存 zone 中，响应正文落盘存储，多个 worker 之间零锁共享状态。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "如何在不修改上游应用代码的前提下做灰度发布？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "使用内置的 split_clients 指令即可。它可以对请求中的 Cookie、用户标识或客户端地址做哈希分桶，按百分比把稳定比例的流量切到新版上游集群，无需改动业务代码。"
+            }
+          }
+        ]
+      }
+    </script>
     <script>
       // 兼容 @nimbus-ds/components 的 webpack UMD 产物：确保 window.global 存在
       window.global = window;

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="NGINX 中文官网">
+  <rect width="1200" height="630" fill="#000000" />
+  <rect x="48" y="48" width="1104" height="534" rx="24" fill="#181818" stroke="#272727" stroke-width="2" />
+
+  <!-- Subtle architectural grid lines -->
+  <g stroke="#272727" stroke-width="1">
+    <line x1="880" y1="48" x2="880" y2="582" />
+    <line x1="48" y1="456" x2="1152" y2="456" />
+  </g>
+
+  <!-- Official NGINX Hexagon Mark -->
+  <g transform="translate(104, 108) scale(0.42)">
+    <path d="M1.515 127.97c.801 1.389 1.93 2.473 3.232 3.207l66.122 38.176.002-.002c1.29.76 2.791 1.195 4.394 1.195 1.604 0 3.106-.436 4.394-1.195l66.124-38.176c1.302-.735 2.427-1.816 3.23-3.205.803-1.389 1.176-2.906 1.162-4.402V47.216l-.002-.002c.012-1.494-.361-3.013-1.162-4.402-.803-1.389-1.932-2.471-3.232-3.207L79.656 1.429v-.002c-1.288-.76-2.788-1.195-4.392-1.195-1.602 0-3.102.435-4.39 1.195v.002L4.752 39.604c-1.302.737-2.431 1.818-3.234 3.207-.801 1.389-1.174 2.908-1.162 4.402l-.002.002v76.351c-.014 1.496.359 3.013 1.16 4.402" fill="#3BB26B" />
+    <path d="M54.094 114.456c0 4.696-3.806 8.504-8.504 8.504-4.696 0-8.504-3.808-8.504-8.504l.002.002.008-58.374c0-4.522 3.996-8.262 9.655-8.262 4.052 0 8.729 1.635 11.591 5.183l2.57 3.075 35.525 42.514V56.322h-.004c0-4.696 3.808-8.504 8.506-8.504 4.696 0 8.502 3.808 8.502 8.504h-.002l-.008 58.37c0 4.522-3.998 8.262-9.655 8.262-4.054 0-8.729-1.633-11.591-5.183L54.09 72.182v42.277l.004-.002Z" fill="#000000" />
+  </g>
+
+  <text x="192" y="154" fill="#E5E5E5" font-family="Geist, Noto Sans SC, sans-serif" font-size="24" font-weight="600" letter-spacing="0.06em">NGINX 中文官网</text>
+
+  <text x="104" y="264" fill="#FFFFFF" font-family="Geist, Noto Sans SC, sans-serif" font-size="58" font-weight="700" letter-spacing="-0.03em">一个进程，</text>
+  <text x="104" y="340" fill="#B5B5B5" font-family="Geist, Noto Sans SC, sans-serif" font-size="58" font-weight="700" letter-spacing="-0.03em">扛住整站流量</text>
+
+  <text x="104" y="408" fill="#9B9B9B" font-family="Geist, Noto Sans SC, sans-serif" font-size="22" font-weight="400">
+    反向代理 · 负载均衡 · 内容缓存 · 限流保护 · TLS 与 HTTP/3
+  </text>
+
+  <!-- Right spec panel -->
+  <g transform="translate(916, 120)">
+    <rect width="200" height="72" rx="12" fill="#1F1F1F" stroke="#272727" />
+    <text x="20" y="32" fill="#3BB26B" font-family="Geist Mono, monospace" font-size="14" font-weight="600">epoll / kqueue</text>
+    <text x="20" y="54" fill="#A3A3A3" font-family="Geist, Noto Sans SC, sans-serif" font-size="14">事件驱动单线程循环</text>
+
+    <rect y="92" width="200" height="72" rx="12" fill="#1F1F1F" stroke="#272727" />
+    <text x="20" y="124" fill="#FFFFFF" font-family="Geist Mono, monospace" font-size="14" font-weight="600">HTTP/3 + QUIC</text>
+    <text x="20" y="146" fill="#A3A3A3" font-family="Geist, Noto Sans SC, sans-serif" font-size="14">七层与四层统一入口</text>
+
+    <rect y="184" width="200" height="72" rx="12" fill="#1F1F1F" stroke="#272727" />
+    <text x="20" y="216" fill="#FFFFFF" font-family="Geist Mono, monospace" font-size="14" font-weight="600">nginx.conf</text>
+    <text x="20" y="238" fill="#A3A3A3" font-family="Geist, Noto Sans SC, sans-serif" font-size="14">热重载不断在线连接</text>
+  </g>
+
+  <!-- Bottom strip -->
+  <text x="104" y="528" fill="#9B9B9B" font-family="Geist Mono, monospace" font-size="18">nginx.ndjp.net</text>
+  <text x="916" y="528" fill="#3BB26B" font-family="Geist, Noto Sans SC, sans-serif" font-size="18" font-weight="600">BSD 二条款开源许可</text>
+</svg>
