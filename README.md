@@ -84,3 +84,12 @@ dist-server.js               # Bun 静态服务器（SPA 回退）
 ## 许可证
 
 本站代码以 MIT 展示；NGINX 本体采用 2 条款 BSD 式许可证，详见官方仓库 LICENSE。
+
+## 部署
+
+- 仓库：<https://github.com/bbylw/nginx-cn>
+- 线上地址：<https://nginx.ndjp.net>
+- 托管：GitHub Pages（Actions 构建 → 上传 `dist` 产物），配置文件 `.github/workflows/deploy.yml`
+- 推送 `main` 即触发部署；`public/CNAME` 固定自定义域名，构建时复制为 `dist/CNAME`
+- 构建额外产出 `dist/404.html`（`index.html` 的副本），让 `/docs/overview` 这类深链接由前端路由接管
+- DNS：`nginx.ndjp.net` 已指向 GitHub Pages 的四条 A 记录（185.199.108/109/110/111.153）
