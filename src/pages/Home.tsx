@@ -372,7 +372,7 @@ export default function Home() {
               </p>
               <div className="lp-cta-row">
                 <a href="#capabilities" className="lp-btn-main">
-                  看它能做什么 ↓
+                  看它能做什么
                 </a>
                 <a
                   href="https://nginx.org/en/download.html"
@@ -380,7 +380,7 @@ export default function Home() {
                   rel="noreferrer"
                   className="lp-btn-ghost"
                 >
-                  下载 nginx ↗
+                  下载 nginx
                 </a>
               </div>
               <div className="lp-hero-note">

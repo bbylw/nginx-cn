@@ -88,7 +88,7 @@ export default function Docs() {
           {active.source && (
             <>
               {" · "}
-              <a href={`https://${active.source}`} target="_blank" rel="noreferrer">原文 ↗</a>
+              <a href={`https://${active.source}`} target="_blank" rel="noreferrer">原文</a>
             </>
           )}
         </p>
@@ -98,13 +98,13 @@ export default function Docs() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 32 }}>
           {prev ? (
             <Link to={`/docs/${prev.slug}`} className="feature-card" style={{ color: "inherit" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>← 上一章</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>上一章</div>
               <b>{prev.title}</b>
             </Link>
           ) : <div />}
           {next ? (
             <Link to={`/docs/${next.slug}`} className="feature-card" style={{ color: "inherit", textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>下一章 →</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>下一章</div>
               <b>{next.title}</b>
             </Link>
           ) : <div />}
@@ -164,7 +164,7 @@ function SidebarInner({
       <div style={{ marginTop: 12, padding: 12, background: "var(--bg-soft)", borderRadius: 12, fontSize: 13, color: "var(--muted)" }}>
         完整目录对照：
         <br />
-        <a href="https://nginx.org/en/docs/index.html" target="_blank" rel="noreferrer">nginx.org/en/docs ↗</a>
+        <a href="https://nginx.org/en/docs/index.html" target="_blank" rel="noreferrer">nginx.org/en/docs</a>
       </div>
     </>
   );

@@ -55,7 +55,7 @@ export function ModuleIndex() {
       <div style={{ marginTop: 12, padding: 12, background: "var(--bg-soft)", borderRadius: 12, fontSize: 13, color: "var(--muted)" }}>
         目录与指令清单来自官方模块页面。
         <br />
-        <a href="https://nginx.org/en/docs/dirindex.html" target="_blank" rel="noreferrer">官方指令索引 ↗</a>
+        <a href="https://nginx.org/en/docs/dirindex.html" target="_blank" rel="noreferrer">官方指令索引</a>
       </div>
     </>
   );
@@ -145,7 +145,7 @@ export function ModulePage() {
         ))}
       </div>
       <div style={{ marginTop: 10 }}>
-        <Link to="/docs/modules" style={{ fontSize: 13 }}>← 返回全部模块</Link>
+        <Link to="/docs/modules" style={{ fontSize: 13 }}>返回全部模块</Link>
       </div>
     </>
   );
@@ -192,7 +192,7 @@ export function ModulePage() {
           <div className="callout note">
             <b>该模块不提供指令</b>
             它只提供内嵌变量（embedded variables），完整参数与变量列表见
-            <a href={m.url} target="_blank" rel="noreferrer"> 官方页面 ↗</a>。
+            <a href={m.url} target="_blank" rel="noreferrer"> 官方页面</a>。
           </div>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
@@ -226,9 +226,9 @@ export function ModulePage() {
             <b>未收录手写示例</b>
             该模块的完整示例配置请直接看官方页面
             {OFFICIAL_EXAMPLE_MODULES.has(m.slug) ? (
-              <> 的 <a href={`${m.url}#example`} target="_blank" rel="noreferrer">Example Configuration ↗</a></>
+              <> 的 <a href={`${m.url}#example`} target="_blank" rel="noreferrer">Example Configuration</a></>
             ) : (
-              <a href={m.url} target="_blank" rel="noreferrer"> ↗</a>
+              <a href={m.url} target="_blank" rel="noreferrer">官方页面</a>
             )}
             。
           </div>
@@ -236,20 +236,20 @@ export function ModulePage() {
         {MODULE_EXAMPLES[m.slug] && OFFICIAL_EXAMPLE_MODULES.has(m.slug) && (
           <p style={{ fontSize: 13.5, color: "var(--muted)" }}>
             更多参数组合见官方
-            <a href={`${m.url}#example`} target="_blank" rel="noreferrer"> Example Configuration ↗</a>
+            <a href={`${m.url}#example`} target="_blank" rel="noreferrer"> Example Configuration</a>
           </p>
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 28 }}>
           {prev ? (
             <Link to={`/docs/modules/${prev.slug}`} className="feature-card" style={{ color: "inherit" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>← 上一个模块</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>上一个模块</div>
               <b>{prev.cn}</b>
             </Link>
           ) : <div />}
           {next ? (
             <Link to={`/docs/modules/${next.slug}`} className="feature-card" style={{ color: "inherit", textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>下一个模块 →</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>下一个模块</div>
               <b>{next.cn}</b>
             </Link>
           ) : <div />}

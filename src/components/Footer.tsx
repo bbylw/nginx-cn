@@ -18,7 +18,6 @@ export default function Footer() {
           {RESOURCES.map((r) => (
             <a key={r.label} href={r.href} target="_blank" rel="noreferrer" className="footer-link">
               {r.label}
-              <span aria-hidden>↗</span>
             </a>
           ))}
         </nav>
