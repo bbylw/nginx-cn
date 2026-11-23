@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { MODULES, DIRECTIVE_INDEX } from "../data/modules";
+import { MODULE_COUNT, DIRECTIVE_COUNT } from "../data/site-stats";
 import CopyAction from "../components/CopyAction";
 import NginxCode, { renderCodeLine } from "../components/NginxCode";
 import { Reveal, TaglineReveal } from "../components/Reveal";
@@ -524,6 +524,7 @@ export default function Home() {
   const [reloadStep, setReloadStep] = useState(2);
 
   const tablistRef = useRef<HTMLDivElement | null>(null);
+  const panelsStackRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
 
@@ -531,9 +532,8 @@ export default function Home() {
   const currentStage = PIPELINE[selectedStage];
   const activeReload = RELOAD_STEPS[reloadStep];
 
-  /* 隐藏标签面板支持浏览器页内查找 (hidden="until-found" + beforematch) */
+  /* 隐藏标签面板支持浏览器页内查找：单层委托 beforematch 同步标签状态 */
   useEffect(() => {
-    const cleanups: Array<() => void> = [];
     panelRefs.current.forEach((panel, index) => {
       if (!panel) return;
       if (index === tab) {
@@ -541,14 +541,26 @@ export default function Home() {
       } else {
         panel.setAttribute("hidden", "until-found");
       }
-      const onMatch = () => {
-        setTab(index);
-      };
-      panel.addEventListener("beforematch", onMatch);
-      cleanups.push(() => panel.removeEventListener("beforematch", onMatch));
     });
-    return () => cleanups.forEach((fn) => fn());
   }, [tab]);
+
+  useEffect(() => {
+    const stack = panelsStackRef.current;
+    if (!stack) return;
+    const onMatch = (event: Event) => {
+      const targetPanel =
+        event.target instanceof Element
+          ? event.target.closest('[role="tabpanel"]')
+          : null;
+      if (!targetPanel) return;
+      const matchedIndex = panelRefs.current.findIndex((p) => p === targetPanel);
+      if (matchedIndex !== -1) {
+        setTab(matchedIndex);
+      }
+    };
+    stack.addEventListener("beforematch", onMatch);
+    return () => stack.removeEventListener("beforematch", onMatch);
+  }, []);
 
   /* 不支持 scroll() 时间线的浏览器使用 IntersectionObserver 显示标签栏边缘渐隐 */
   useEffect(() => {
@@ -651,11 +663,11 @@ export default function Home() {
                 </div>
                 <div className="lp-proof-item">
                   <dt>官方模块</dt>
-                  <dd>{MODULES.length}</dd>
+                  <dd>{MODULE_COUNT}</dd>
                 </div>
                 <div className="lp-proof-item">
                   <dt>内置指令</dt>
-                  <dd>{DIRECTIVE_INDEX.length}</dd>
+                  <dd>{DIRECTIVE_COUNT}</dd>
                 </div>
                 <div className="lp-proof-item">
                   <dt>传输协议</dt>
@@ -811,7 +823,7 @@ export default function Home() {
       </section>
 
       {/* ================= 02 七大能力 ================= */}
-      <section className="lp-section lp-band-black" id="capabilities">
+      <section className="lp-section lp-band-black" id="capabilities" tabIndex={-1}>
         <div className="lp-wrap">
           <Reveal>
             <SecHead
@@ -848,7 +860,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="lp-panels-stack">
+            <div ref={panelsStackRef} className="lp-panels-stack">
               {CAPS.map((c, i) => (
                 <div
                   key={c.key}
@@ -899,9 +911,16 @@ export default function Home() {
               desc="同一份二进制把这些入口职责全部收敛：少一次跨进程跳转、少一套监控探针、少一份配置同步，线上故障点也随之减少。"
             />
 
-            <div className="lp-table-wrap">
+            <div
+              className="lp-table-wrap"
+              tabIndex={0}
+              role="region"
+              aria-labelledby="replace-table-caption"
+            >
               <table className="lp-replace-table">
-                <caption className="visually-hidden">NGINX 替代传统中间件的配置对照表</caption>
+                <caption id="replace-table-caption" className="visually-hidden">
+                  NGINX 替代传统中间件的配置对照表
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col" className="lp-col-legacy">
@@ -915,14 +934,14 @@ export default function Home() {
                 <tbody>
                   {REPLACE_ROWS.map(([role, what, cmd], idx) => (
                     <tr key={what}>
-                      <td className="lp-replace-what">
+                      <th scope="row" className="lp-replace-what">
                         <span className="lp-replace-idx">
                           {String(idx + 1).padStart(2, "0")}
                         </span>
                         <span className="lp-replace-role">{role}</span>
                         <span className="lp-replace-name">{what}</span>
-                      </td>
-                      <td>
+                      </th>
+                      <td className="lp-replace-cell">
                         <code className="lp-replace-cmd">{cmd}</code>
                       </td>
                     </tr>
@@ -1002,7 +1021,7 @@ export default function Home() {
       </section>
 
       {/* ================= 06 架构对比与调优 ================= */}
-      <section className="lp-section lp-band-black" id="architecture">
+      <section className="lp-section lp-band-black" id="architecture" tabIndex={-1}>
         <div className="lp-wrap">
           <Reveal>
             <SecHead
@@ -1070,7 +1089,7 @@ export default function Home() {
       </section>
 
       {/* ================= 07 真实场景 Bento ================= */}
-      <section className="lp-section lp-band-elevated" id="scenarios">
+      <section className="lp-section lp-band-elevated" id="scenarios" tabIndex={-1}>
         <div className="lp-wrap">
           <Reveal>
             <SecHead
@@ -1103,7 +1122,7 @@ export default function Home() {
       </section>
 
       {/* ================= 08 平滑重载 ================= */}
-      <section className="lp-section lp-band-black" id="reload">
+      <section className="lp-section lp-band-black" id="reload" tabIndex={-1}>
         <div className="lp-wrap">
           <Reveal>
             <SecHead
@@ -1165,7 +1184,7 @@ export default function Home() {
       </section>
 
       {/* ================= 09 高频工程问答 ================= */}
-      <section className="lp-section lp-band-elevated" id="faq">
+      <section className="lp-section lp-band-elevated" id="faq" tabIndex={-1}>
         <div className="lp-wrap">
           <Reveal>
             <div className="lp-faq-grid">
@@ -1206,15 +1225,15 @@ export default function Home() {
       </section>
 
       {/* ================= 10 事实条与收尾 ================= */}
-      <section className="lp-facts">
+      <section className="lp-facts lp-deferred">
         <div className="lp-wrap">
           <div className="lp-facts-frame">
             <div className="lp-facts-inner">
               {[
                 ["2004", "首次开源发布"],
                 ["BSD", "二条款开源许可"],
-                [`${MODULES.length}`, "个官方模块"],
-                [`${DIRECTIVE_INDEX.length}`, "条内置指令"],
+                [`${MODULE_COUNT}`, "个官方模块"],
+                [`${DIRECTIVE_COUNT}`, "条内置指令"],
                 ["3", "HTTP/1.1 · 2 · 3"],
                 ["njs", "JavaScript 扩展"],
               ].map(([n, l]) => (
@@ -1228,7 +1247,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="lp-end">
+      <section className="lp-end lp-deferred">
         <div className="lp-wrap">
           <Reveal>
             <div className="lp-end-inner">
@@ -1244,7 +1263,12 @@ export default function Home() {
               </div>
 
               <div className="lp-end-card">
-                <pre className="lp-end-pre" tabIndex={0}>
+                <pre
+                  className="lp-end-pre"
+                  role="region"
+                  aria-label="快速安装命令"
+                  tabIndex={0}
+                >
                   <code>
                     {INSTALL_CMD.split("\n").map((line, idx, arr) => (
                       <span key={idx} className="lp-end-line">

@@ -30,14 +30,17 @@ export function Reveal({
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
+          if (
+            entry.isIntersecting ||
+            (entry.boundingClientRect.height > 0 && entry.boundingClientRect.bottom <= 0)
+          ) {
             setRevealed(true);
             observer.disconnect();
             break;
           }
         }
       },
-      { threshold: 0.05, rootMargin: "0px 0px -32px 0px" }
+      { threshold: 0, rootMargin: "80px 0px 40px 0px" }
     );
 
     observer.observe(node);

@@ -1,23 +1,20 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { MODULE_GROUPS, MODULES, MODULE_MAP, type ModuleGroup } from "../data/modules";
 import { MODULE_EXAMPLES, OFFICIAL_EXAMPLE_MODULES } from "../data/module-examples";
 import { useMedia } from "../hooks/useMedia";
+import Breadcrumbs from "../components/Breadcrumbs";
+import CodeBlock from "../components/CodeBlock";
 
 function Badge({ children, tone = "n" }: { children: React.ReactNode; tone?: "n" | "g" | "y" }) {
-  const bg = tone === "g" ? "#e9faf3" : tone === "y" ? "#fef6e8" : "var(--bg-soft)";
-  const bd = tone === "g" ? "#a8ecca" : tone === "y" ? "#f5d9a8" : "var(--line)";
-  return (
-    <span style={{ background: bg, border: `1px solid ${bd}`, borderRadius: 999, padding: "2px 8px", fontSize: 11.5, fontWeight: 700, color: "#2c3a33" }}>
-      {children}
-    </span>
-  );
+  return <span className={`doc-badge is-${tone}`}>{children}</span>;
 }
 
 export function ModuleIndex() {
   const [q, setQ] = useState("");
   const [group, setGroup] = useState<ModuleGroup | "all">("all");
   const narrow = useMedia("(max-width: 960px)");
+  const searchId = useId();
 
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -33,29 +30,44 @@ export function ModuleIndex() {
     });
   }, [q, group]);
 
-  const grouped = MODULE_GROUPS.map((g) => ({ ...g, items: list.filter((m) => m.group === g.key) })).filter((g) => g.items.length);
+  const grouped = MODULE_GROUPS.map((g) => ({
+    ...g,
+    items: list.filter((m) => m.group === g.key),
+  })).filter((g) => g.items.length);
 
   const filterBar = (
     <>
       <h4>模块分组</h4>
-      {([{ key: "all" as const, cn: "全部模块" }, ...MODULE_GROUPS] as { key: ModuleGroup | "all"; cn: string }[]).map((g) => {
-        const n = g.key === "all" ? MODULES.length : MODULES.filter((m) => m.group === g.key).length;
+      {(
+        [{ key: "all" as const, cn: "全部模块" }, ...MODULE_GROUPS] as {
+          key: ModuleGroup | "all";
+          cn: string;
+        }[]
+      ).map((g) => {
+        const n =
+          g.key === "all"
+            ? MODULES.length
+            : MODULES.filter((m) => m.group === g.key).length;
         const active = group === g.key;
         return (
           <button
             key={g.key}
+            type="button"
             onClick={() => setGroup(g.key)}
             aria-pressed={active}
-            style={{ display: "flex", justifyContent: "space-between", width: "100%", padding: "9px 10px", borderRadius: 10, border: 0, background: active ? "var(--ink)" : "transparent", color: active ? "white" : "#21322a", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "left" }}
+            className={`docs-filter-btn ${active ? "is-active" : ""}`}
           >
-            {g.cn} <span style={{ opacity: 0.6 }}>{n}</span>
+            <span>{g.cn}</span>
+            <span className="docs-filter-count">{n}</span>
           </button>
         );
       })}
-      <div style={{ marginTop: 12, padding: 12, background: "var(--bg-soft)", borderRadius: 12, fontSize: 13, color: "var(--muted)" }}>
+      <div className="docs-side-note">
         目录与指令清单来自官方模块页面。
         <br />
-        <a href="https://nginx.org/en/docs/dirindex.html" target="_blank" rel="noreferrer">官方指令索引</a>
+        <a href="https://nginx.org/en/docs/dirindex.html" target="_blank" rel="noreferrer">
+          官方指令索引
+        </a>
       </div>
     </>
   );
@@ -74,42 +86,53 @@ export function ModuleIndex() {
       </aside>
 
       <article className="docs-content">
-        <div className="crumb">文档 / 模块参考</div>
+        <Breadcrumbs
+          items={[
+            { label: "文档", to: "/docs/overview" },
+            { label: "模块参考" },
+          ]}
+        />
         <h1>模块参考</h1>
-        <p style={{ color: "var(--muted)", fontSize: 16 }}>
+        <p className="docs-lead">
           官方共 {MODULES.length} 个模块。可按模块名、中文名、说明或指令名搜索——想找「哪个模块提供某条指令」时，直接搜指令即可。
         </p>
 
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="搜索模块或指令，例如 limit_req、ssl_preread、gzip…"
-          aria-label="搜索模块与指令"
-          style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid var(--line)", fontSize: 15, margin: "14px 0 6px", outline: "none" }}
-        />
-        <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 10 }}>命中 {list.length} 个模块</div>
+        <search>
+          <label htmlFor={searchId} className="visually-hidden">
+            搜索模块与指令
+          </label>
+          <input
+            id={searchId}
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="搜索模块或指令，例如 limit_req、ssl_preread、gzip…"
+            className="docs-search-input docs-main-search"
+          />
+        </search>
+        <div className="docs-search-meta" role="status" aria-live="polite">
+          命中 {list.length} 个模块
+        </div>
 
-        {grouped.length === 0 && <div className="callout note">没有匹配的模块，换个关键词试试。</div>}
+        {grouped.length === 0 && (
+          <div className="callout note">没有匹配的模块，换个关键词试试。</div>
+        )}
 
         {grouped.map((g) => (
-          <section key={g.key} style={{ marginTop: 22 }}>
-            <h2 style={{ fontSize: 19, marginBottom: 4 }}>{g.cn}</h2>
-            <p style={{ color: "var(--muted)", fontSize: 14, marginTop: 0 }}>{g.desc}</p>
-            <div style={{ display: "grid", gap: 8 }}>
+          <section key={g.key} className="docs-mod-group">
+            <h2>{g.cn}</h2>
+            <p className="docs-mod-group-desc">{g.desc}</p>
+            <div className="docs-mod-list">
               {g.items.map((m) => (
-                <Link
-                  key={m.slug}
-                  to={`/docs/modules/${m.slug}`}
-                  style={{ display: "block", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 14px", color: "inherit", background: "white" }}
-                >
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                    <b style={{ fontSize: 15 }}>{m.cn}</b>
-                    <code style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{m.name}</code>
+                <Link key={m.slug} to={`/docs/modules/${m.slug}`} className="docs-mod-card">
+                  <div className="docs-mod-card-head">
+                    <b>{m.cn}</b>
+                    <code className="docs-mod-slug">{m.name}</code>
                     {m.since && <Badge>自 {m.since}</Badge>}
                     {m.optional && <Badge tone="y">需显式编译</Badge>}
-                    <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--muted)" }}>{m.directives.length} 条指令</span>
+                    <span className="docs-mod-count">{m.directives.length} 条指令</span>
                   </div>
-                  <div style={{ fontSize: 14, color: "#43524b", marginTop: 4, lineHeight: 1.6 }}>{m.desc}</div>
+                  <div className="docs-mod-desc">{m.desc}</div>
                 </Link>
               ))}
             </div>
@@ -135,27 +158,39 @@ export function ModulePage() {
   const siblingNav = (
     <>
       <h4>{groupMeta.cn}</h4>
-      <div style={{ maxHeight: "62vh", overflow: "auto" }}>
+      <div className="docs-siblings-list">
         {siblings.map((x) => (
-          <Link key={x.slug} to={`/docs/modules/${x.slug}`} className={x.slug === m.slug ? "active" : ""}>
-            <span style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: 8 }}>
-              <span>{x.cn}</span>
-            </span>
+          <Link
+            key={x.slug}
+            to={`/docs/modules/${x.slug}`}
+            className={x.slug === m.slug ? "active" : ""}
+            aria-current={x.slug === m.slug ? "page" : undefined}
+          >
+            <span>{x.cn}</span>
           </Link>
         ))}
       </div>
-      <div style={{ marginTop: 10 }}>
-        <Link to="/docs/modules" style={{ fontSize: 13 }}>返回全部模块</Link>
+      <div className="docs-back-link">
+        <Link to="/docs/modules">返回全部模块</Link>
       </div>
     </>
   );
+
+  const codeTitle =
+    m.group === "stream"
+      ? "stream 上下文"
+      : m.group === "mail"
+        ? "mail 上下文"
+        : "nginx.conf";
 
   return (
     <div className="container docs-layout">
       <aside className="docs-side" aria-label="同组模块">
         {narrow ? (
           <details className="side-collapse">
-            <summary>{groupMeta.cn} · {siblings.length} 个模块</summary>
+            <summary>
+              {groupMeta.cn} · {siblings.length} 个模块
+            </summary>
             <div className="side-collapse-body">{siblingNav}</div>
           </details>
         ) : (
@@ -164,20 +199,30 @@ export function ModulePage() {
       </aside>
 
       <article className="docs-content">
-        <div className="crumb">
-          文档 / 模块参考 / {groupMeta.cn} / <span style={{ color: "var(--ink)", fontWeight: 700 }}>{m.cn}</span>
-        </div>
-        <h1 style={{ marginBottom: 6 }}>{m.cn}</h1>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
-          <code style={{ fontFamily: "var(--font-mono)", fontSize: 13, background: "var(--bg-soft)", border: "1px solid var(--line)", borderRadius: 8, padding: "3px 8px" }}>{m.name}</code>
+        <Breadcrumbs
+          items={[
+            { label: "文档", to: "/docs/overview" },
+            { label: "模块参考", to: "/docs/modules" },
+            { label: m.cn },
+          ]}
+        />
+        <h1 className="docs-mod-title">{m.cn}</h1>
+        <div className="docs-mod-meta">
+          <code className="docs-mod-code">{m.name}</code>
           {m.since && <Badge>自 {m.since}</Badge>}
-          {m.optional ? <Badge tone="y">默认不编译，需显式开启</Badge> : <Badge tone="g">默认包含</Badge>}
+          {m.optional ? (
+            <Badge tone="y">默认不编译，需显式开启</Badge>
+          ) : (
+            <Badge tone="g">默认包含</Badge>
+          )}
         </div>
-        <p style={{ fontSize: 16, lineHeight: 1.8 }}>{m.desc}</p>
+        <p className="docs-mod-summary">{m.desc}</p>
 
         <div className="callout info">
           <b>官方页面</b>
-          <a href={m.url} target="_blank" rel="noreferrer">{m.url.replace("https://", "")}</a>
+          <a href={m.url} target="_blank" rel="noreferrer">
+            {m.url.replace("https://", "")}
+          </a>
           —— 指令的完整参数、默认值、可出现的上下文（http / server / location 等）都在那里。
         </div>
 
@@ -192,17 +237,21 @@ export function ModulePage() {
           <div className="callout note">
             <b>该模块不提供指令</b>
             它只提供内嵌变量（embedded variables），完整参数与变量列表见
-            <a href={m.url} target="_blank" rel="noreferrer"> 官方页面</a>。
+            <a href={m.url} target="_blank" rel="noreferrer">
+              {" "}
+              官方页面
+            </a>
+            。
           </div>
         ) : (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+          <div className="docs-dir-grid">
             {m.directives.map((d) => (
               <a
                 key={d}
                 href={`${m.url}#${d}`}
                 target="_blank"
                 rel="noreferrer"
-                style={{ fontFamily: "var(--font-mono)", fontSize: 13, border: "1px solid var(--line)", borderRadius: 8, padding: "5px 9px", background: "white", color: "#1a2420" }}
+                className="docs-dir-chip"
               >
                 {d}
               </a>
@@ -213,50 +262,61 @@ export function ModulePage() {
         <h2>最小示例</h2>
         {MODULE_EXAMPLES[m.slug] ? (
           <>
-            <p style={{ fontSize: 14, color: "var(--muted)", marginTop: 0 }}>{MODULE_EXAMPLES[m.slug].title}</p>
-            <div className="codeblock">
-              <div style={{ color: "#8aa79a", fontSize: 12, marginBottom: 8 }}>
-                {m.group === "stream" ? "stream 上下文" : m.group === "mail" ? "mail 上下文" : "nginx.conf"}
-              </div>
-              <pre>{MODULE_EXAMPLES[m.slug].code}</pre>
-            </div>
+            <p className="docs-example-title">{MODULE_EXAMPLES[m.slug].title}</p>
+            <CodeBlock code={MODULE_EXAMPLES[m.slug].code} title={codeTitle} />
           </>
         ) : (
           <div className="callout note">
             <b>未收录手写示例</b>
             该模块的完整示例配置请直接看官方页面
             {OFFICIAL_EXAMPLE_MODULES.has(m.slug) ? (
-              <> 的 <a href={`${m.url}#example`} target="_blank" rel="noreferrer">Example Configuration</a></>
+              <>
+                {" "}
+                的{" "}
+                <a href={`${m.url}#example`} target="_blank" rel="noreferrer">
+                  Example Configuration
+                </a>
+              </>
             ) : (
-              <a href={m.url} target="_blank" rel="noreferrer">官方页面</a>
+              <a href={m.url} target="_blank" rel="noreferrer">
+                官方页面
+              </a>
             )}
             。
           </div>
         )}
         {MODULE_EXAMPLES[m.slug] && OFFICIAL_EXAMPLE_MODULES.has(m.slug) && (
-          <p style={{ fontSize: 13.5, color: "var(--muted)" }}>
+          <p className="docs-example-more">
             更多参数组合见官方
-            <a href={`${m.url}#example`} target="_blank" rel="noreferrer"> Example Configuration</a>
+            <a href={`${m.url}#example`} target="_blank" rel="noreferrer">
+              {" "}
+              Example Configuration
+            </a>
           </p>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 28 }}>
+        <nav className="docs-pager" aria-label="模块切换">
           {prev ? (
-            <Link to={`/docs/modules/${prev.slug}`} className="feature-card" style={{ color: "inherit" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>上一个模块</div>
+            <Link to={`/docs/modules/${prev.slug}`} className="feature-card docs-pager-link">
+              <span className="docs-pager-label">上一个模块</span>
               <b>{prev.cn}</b>
             </Link>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
           {next ? (
-            <Link to={`/docs/modules/${next.slug}`} className="feature-card" style={{ color: "inherit", textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>下一个模块</div>
+            <Link
+              to={`/docs/modules/${next.slug}`}
+              className="feature-card docs-pager-link is-next"
+            >
+              <span className="docs-pager-label">下一个模块</span>
               <b>{next.cn}</b>
             </Link>
-          ) : <div />}
-        </div>
+          ) : (
+            <div />
+          )}
+        </nav>
       </article>
     </div>
   );
 }
-
-

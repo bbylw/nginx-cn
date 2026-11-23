@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import CopyAction from "./CopyAction";
 import { IconTerminal } from "./Icons";
 
@@ -158,19 +158,25 @@ export default function NginxCode({
   highlightLines?: number[];
   className?: string;
 }) {
+  const titleId = useId();
   const lines = code.split("\n");
   const highlighted = highlightLines ? new Set(highlightLines) : null;
 
   return (
-    <div className={`lp-code-box ${className}`}>
+    <figure className={`lp-code-box ${className}`}>
       <div className="lp-code-head">
-        <span className="lp-code-title">
+        <figcaption id={titleId} className="lp-code-title">
           <IconTerminal size={15} className="lp-code-icon" />
           <span>{title}</span>
-        </span>
+        </figcaption>
         <CopyAction text={code} label={copyLabel} />
       </div>
-      <pre className="lp-code-pre" tabIndex={0}>
+      <pre
+        className="lp-code-pre"
+        role="region"
+        aria-labelledby={titleId}
+        tabIndex={0}
+      >
         <code className="lp-code-grid">
           {lines.map((line, i) => {
             const lineNum = i + 1;
@@ -193,6 +199,6 @@ export default function NginxCode({
           })}
         </code>
       </pre>
-    </div>
+    </figure>
   );
 }

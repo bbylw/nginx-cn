@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Link, NavLink, useParams, Navigate } from "react-router-dom";
 import { DOCS, GROUPS, type DocSection } from "../data/handbook";
-import { MODULES } from "../data/modules";
+import { MODULE_COUNT } from "../data/site-stats";
 import { useMedia } from "../hooks/useMedia";
+import Breadcrumbs from "../components/Breadcrumbs";
 import CodeBlock from "../components/CodeBlock";
 
 function Block({ block }: { block: DocSection["blocks"][number] }) {
@@ -40,16 +41,33 @@ function Block({ block }: { block: DocSection["blocks"][number] }) {
       );
     case "table":
       return (
-        <table className="doc-table">
-          <thead>
-            <tr>{block.headers.map((h) => <th key={h}>{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {block.rows.map((r, i) => (
-              <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>
-            ))}
-          </tbody>
-        </table>
+        <div
+          className="doc-table-wrap"
+          tabIndex={0}
+          role="region"
+          aria-label="参数对照表"
+        >
+          <table className="doc-table">
+            <thead>
+              <tr>
+                {block.headers.map((h) => (
+                  <th key={h} scope="col">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((r, i) => (
+                <tr key={i}>
+                  {r.map((c, j) => (
+                    <td key={j}>{c}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
   }
 }
@@ -79,36 +97,49 @@ export default function Docs() {
       </aside>
 
       <article className="docs-content">
-        <div className="crumb">
-          文档 / {active.group} / <span style={{ color: "var(--ink)", fontWeight: 700 }}>{active.title}</span>
-        </div>
+        <Breadcrumbs
+          items={[
+            { label: "文档", to: "/docs/overview" },
+            { label: active.group, to: "/docs/overview" },
+            { label: active.title },
+          ]}
+        />
         <h1>{active.title}</h1>
-        <p style={{ color: "var(--muted)", fontSize: 16 }}>
+        <p className="docs-lead">
           {active.desc}
           {active.source && (
             <>
               {" · "}
-              <a href={`https://${active.source}`} target="_blank" rel="noreferrer">原文</a>
+              <a href={`https://${active.source}`} target="_blank" rel="noreferrer">
+                原文
+              </a>
             </>
           )}
         </p>
         {active.blocks.map((b, i) => (
           <Block key={i} block={b} />
         ))}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 32 }}>
+        <nav className="docs-pager" aria-label="章节切换">
           {prev ? (
-            <Link to={`/docs/${prev.slug}`} className="feature-card" style={{ color: "inherit" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>上一章</div>
+            <Link to={`/docs/${prev.slug}`} className="feature-card docs-pager-link">
+              <span className="docs-pager-label">上一章</span>
               <b>{prev.title}</b>
             </Link>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
           {next ? (
-            <Link to={`/docs/${next.slug}`} className="feature-card" style={{ color: "inherit", textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>下一章</div>
+            <Link
+              to={`/docs/${next.slug}`}
+              className="feature-card docs-pager-link is-next"
+            >
+              <span className="docs-pager-label">下一章</span>
               <b>{next.title}</b>
             </Link>
-          ) : <div />}
-        </div>
+          ) : (
+            <div />
+          )}
+        </nav>
       </article>
     </div>
   );
@@ -125,24 +156,31 @@ function SidebarInner({
   filtered: DocSection[];
   narrow: boolean;
 }) {
+  const searchId = useId();
   const body = (
     <>
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="搜索章节…"
-        aria-label="搜索文档章节"
-        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--line)", fontSize: 14, marginBottom: 10, outline: "none" }}
-      />
+      <search>
+        <label htmlFor={searchId} className="visually-hidden">
+          搜索文档章节
+        </label>
+        <input
+          id={searchId}
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="搜索章节…"
+          className="docs-search-input docs-side-search"
+        />
+      </search>
       {GROUPS.map((g) => {
         if (g === "模块参考") {
           return (
             <div key={g}>
               <h4>{g}</h4>
               <NavLink to="/docs/modules" className={() => ""}>
-                <span style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                  全部官方模块
-                  <span>{MODULES.length}</span>
+                <span className="docs-side-row">
+                  <span>全部官方模块</span>
+                  <span>{MODULE_COUNT}</span>
                 </span>
               </NavLink>
             </div>
@@ -154,17 +192,23 @@ function SidebarInner({
           <div key={g}>
             <h4>{g}</h4>
             {items.map((d) => (
-              <NavLink key={d.slug} to={`/docs/${d.slug}`} className={({ isActive }) => (isActive ? "active" : "")}>
+              <NavLink
+                key={d.slug}
+                to={`/docs/${d.slug}`}
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
                 {d.title}
               </NavLink>
             ))}
           </div>
         );
       })}
-      <div style={{ marginTop: 12, padding: 12, background: "var(--bg-soft)", borderRadius: 12, fontSize: 13, color: "var(--muted)" }}>
+      <div className="docs-side-note">
         完整目录对照：
         <br />
-        <a href="https://nginx.org/en/docs/index.html" target="_blank" rel="noreferrer">nginx.org/en/docs</a>
+        <a href="https://nginx.org/en/docs/index.html" target="_blank" rel="noreferrer">
+          nginx.org/en/docs
+        </a>
       </div>
     </>
   );

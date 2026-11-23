@@ -14,11 +14,18 @@ const EXTERNAL_RESOURCES = [
 
 export default function Footer() {
   return (
-    <footer className="footer">
+    <footer className="footer lp-deferred">
       <div className="footer-inner">
         <div className="footer-top">
           <Link to="/" className="footer-brand" aria-label="NGINX 首页">
-            <img src="/nginx-mark.svg" alt="" width={28} height={28} />
+            <img
+              src="/nginx-mark.svg"
+              alt=""
+              width={28}
+              height={28}
+              loading="lazy"
+              decoding="async"
+            />
             <div className="footer-brand-copy">
               <strong>NGINX</strong>
               <span>高性能 Web 服务器与反向代理</span>
