@@ -773,12 +773,7 @@ kill -QUIT $(cat /run/nginx.pid.oldbin)   # 老 master 退出`}</pre>
               <button type="button" className="lp-mini-btn" onClick={copyInstall}>
                 {copied ? "已复制 ✓" : "复制命令"}
               </button>
-              <a href="https://nginx.org/en/download.html" target="_blank" rel="noreferrer">
-                下载页 ↗
-              </a>
-              <a href="https://github.com/nginx/nginx" target="_blank" rel="noreferrer">
-                源码 ↗
-              </a>
+              <span className="lp-end-hint">Debian / Ubuntu · 其余发行版命令略有差异</span>
             </div>
           </div>
         </div>

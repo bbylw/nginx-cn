@@ -506,8 +506,7 @@ code { font-family: var(--font-mono); }
   color: #cfe8db; overflow-x: auto;
 }
 .lp-end-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 16px; }
-.lp-end-actions a { font-size: 13px; font-weight: 700; color: #7dffc4; }
-.lp-end-actions a:hover { color: #fff; text-decoration: none; }
+.lp-end-hint { font-size: 12.5px; color: #7f9b8d; line-height: 1.6; }
 
 /* ============================================================
    文档页
