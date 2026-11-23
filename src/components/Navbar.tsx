@@ -7,7 +7,7 @@ export default function Navbar() {
     <header className="topbar">
       <div className="topbar-inner">
         <Link to="/" className="brand" aria-label="NGINX 中文官网首页">
-          <span className="brand-mark" aria-hidden>N</span>
+          <img className="brand-mark" src="/nginx-mark.svg" alt="" width={36} height={36} />
         </Link>
         <nav className="nav-links" aria-label="主导航">
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>

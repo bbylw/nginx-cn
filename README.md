@@ -52,6 +52,10 @@ bun run start      # 生产：Bun 静态服务器 http://localhost:4173
 ## 结构
 
 ```
+public/
+  nginx-mark.svg             # 官方 N 标记（取自 nginx.org/img/nginx_logo.svg）
+  favicon.svg                # 官方标记作为 SVG 图标
+  favicon.ico                # 官方 favicon.ico（16/32/48）
 src/
   main.tsx
   App.tsx                    # 路由
@@ -72,6 +76,7 @@ dist-server.js               # Bun 静态服务器（SPA 回退）
 
 - 文档目录：https://nginx.org/en/docs/index.html
 - 落地页与运行时描述：https://github.com/nginx/nginx/blob/master/README.md
+- 徽标与图标：nginx.org 官方资源（`/img/nginx_logo.svg` 的 N 标记、`/favicon.ico`）
 - 各章节正文：nginx.org 对应页面（install / configure / control / events / hash / debugging_log / syslog / syntax / regex_captures / switches / windows / quic / http/* / stream/* / njs / faq …）
 
 中文内容为整理与意译，**以官方英文文档为准**。

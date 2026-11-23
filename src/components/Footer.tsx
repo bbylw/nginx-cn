@@ -12,7 +12,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-inner">
         <Link to="/" className="footer-mark" aria-label="NGINX 中文官网首页">
-          N
+          <img src="/nginx-mark.svg" alt="" width={28} height={28} />
         </Link>
         <nav className="footer-links" aria-label="资源">
           {RESOURCES.map((r) => (
