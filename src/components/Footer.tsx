@@ -1,13 +1,8 @@
 import { Link } from "react-router-dom";
 
-const SITE_PATHS = [
-  { label: "文档目录", to: "/docs/overview" },
-  { label: "全部模块", to: "/docs/modules" },
-];
-
 const EXTERNAL_RESOURCES = [
   { label: "官方文档", href: "https://nginx.org/en/docs/" },
-  { label: "GitHub 源码", href: "https://github.com/nginx/nginx" },
+  { label: "GitHub", href: "https://github.com/nginx/nginx" },
   { label: "下载页", href: "https://nginx.org/en/download.html" },
   { label: "社区博客", href: "https://blog.nginx.org/" },
 ];
@@ -32,12 +27,7 @@ export default function Footer() {
             </div>
           </Link>
 
-          <nav className="footer-links" aria-label="站点与官方资源">
-            {SITE_PATHS.map((item) => (
-              <Link key={item.to} to={item.to} className="footer-link">
-                {item.label}
-              </Link>
-            ))}
+          <nav className="footer-links" aria-label="官方资源">
             {EXTERNAL_RESOURCES.map((item) => (
               <a
                 key={item.label}

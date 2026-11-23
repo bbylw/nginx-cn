@@ -194,7 +194,7 @@ export default function Navbar() {
     },
     {
       to: "https://github.com/nginx/nginx",
-      label: "GitHub 源码",
+      label: "GitHub",
       desc: "nginx/nginx 开源仓库",
       active: false,
       external: true,
@@ -308,8 +308,8 @@ export default function Navbar() {
             href="https://github.com/nginx/nginx"
             target="_blank"
             rel="noreferrer"
-            aria-label="访问 NGINX GitHub 源码仓库（新窗口打开）"
-            title="GitHub 源码"
+            aria-label="访问 NGINX GitHub 仓库（新窗口打开）"
+            title="GitHub"
           >
             <IconGithub size={18} />
           </a>
