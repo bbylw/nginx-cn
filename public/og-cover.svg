@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="NGINX 中文官网">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="NGINX">
   <rect width="1200" height="630" fill="#000000" />
   <rect x="48" y="48" width="1104" height="534" rx="24" fill="#181818" stroke="#272727" stroke-width="2" />
 
@@ -14,7 +14,7 @@
     <path d="M54.094 114.456c0 4.696-3.806 8.504-8.504 8.504-4.696 0-8.504-3.808-8.504-8.504l.002.002.008-58.374c0-4.522 3.996-8.262 9.655-8.262 4.052 0 8.729 1.635 11.591 5.183l2.57 3.075 35.525 42.514V56.322h-.004c0-4.696 3.808-8.504 8.506-8.504 4.696 0 8.502 3.808 8.502 8.504h-.002l-.008 58.37c0 4.522-3.998 8.262-9.655 8.262-4.054 0-8.729-1.633-11.591-5.183L54.09 72.182v42.277l.004-.002Z" fill="#000000" />
   </g>
 
-  <text x="192" y="154" fill="#E5E5E5" font-family="Geist, Noto Sans SC, sans-serif" font-size="24" font-weight="600" letter-spacing="0.06em">NGINX 中文官网</text>
+  <text x="192" y="154" fill="#E5E5E5" font-family="Geist, Noto Sans SC, sans-serif" font-size="24" font-weight="600" letter-spacing="0.06em">NGINX</text>
 
   <text x="104" y="264" fill="#FFFFFF" font-family="Geist, Noto Sans SC, sans-serif" font-size="58" font-weight="700" letter-spacing="-0.03em">一个进程，</text>
   <text x="104" y="340" fill="#B5B5B5" font-family="Geist, Noto Sans SC, sans-serif" font-size="58" font-weight="700" letter-spacing="-0.03em">扛住整站流量</text>
