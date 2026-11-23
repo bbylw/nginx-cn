@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@nimbus-ds/components";
+import { useRef, useState } from "react";
 import { MODULES, DIRECTIVE_INDEX } from "../data/modules";
 
-/* ========== 能力面板数据（配置片段均为可直接使用的真实写法） ========== */
+/* ============================================================
+   数据
+   ============================================================ */
 type Cap = {
   key: string;
   label: string;
@@ -11,7 +11,7 @@ type Cap = {
   desc: string;
   points: string[];
   code: string;
-  chips: { d: string; slug: string }[];
+  chips: string[];
 };
 
 const CAPS: Cap[] = [
@@ -47,13 +47,7 @@ server {
         proxy_next_upstream   error timeout http_502;
     }
 }`,
-    chips: [
-      { d: "proxy_pass", slug: "http-proxy" },
-      { d: "proxy_set_header", slug: "http-proxy" },
-      { d: "proxy_next_upstream", slug: "http-proxy" },
-      { d: "keepalive", slug: "http-upstream" },
-      { d: "zone", slug: "http-upstream" },
-    ],
+    chips: ["proxy_pass", "proxy_set_header", "proxy_next_upstream", "keepalive", "zone"],
   },
   {
     key: "balance",
@@ -79,13 +73,7 @@ upstream cache_tier {
     server  10.0.1.11:8080;
     server  10.0.1.12:8080;
 }`,
-    chips: [
-      { d: "upstream", slug: "http-upstream" },
-      { d: "least_conn", slug: "http-upstream" },
-      { d: "ip_hash", slug: "http-upstream" },
-      { d: "hash", slug: "http-upstream" },
-      { d: "server", slug: "http-upstream" },
-    ],
+    chips: ["upstream", "least_conn", "ip_hash", "hash", "server"],
   },
   {
     key: "cache",
@@ -116,13 +104,7 @@ server {
         proxy_pass                 http://app;
     }
 }`,
-    chips: [
-      { d: "proxy_cache_path", slug: "http-proxy" },
-      { d: "proxy_cache", slug: "http-proxy" },
-      { d: "proxy_cache_use_stale", slug: "http-proxy" },
-      { d: "proxy_cache_lock", slug: "http-proxy" },
-      { d: "proxy_cache_background_update", slug: "http-proxy" },
-    ],
+    chips: ["proxy_cache_path", "proxy_cache", "proxy_cache_valid", "proxy_cache_use_stale", "proxy_cache_lock"],
   },
   {
     key: "limit",
@@ -151,13 +133,7 @@ server {
         }
     }
 }`,
-    chips: [
-      { d: "limit_req_zone", slug: "http-limit-req" },
-      { d: "limit_req", slug: "http-limit-req" },
-      { d: "limit_req_dry_run", slug: "http-limit-req" },
-      { d: "limit_conn_zone", slug: "http-limit-conn" },
-      { d: "limit_conn", slug: "http-limit-conn" },
-    ],
+    chips: ["limit_req_zone", "limit_req", "limit_req_dry_run", "limit_conn_zone", "limit_conn"],
   },
   {
     key: "tls",
@@ -187,13 +163,7 @@ server {
     add_header Alt-Svc 'h3=":443"; ma=86400' always;
     add_header Strict-Transport-Security "max-age=31536000" always;
 }`,
-    chips: [
-      { d: "ssl_certificate", slug: "http-ssl" },
-      { d: "ssl_session_cache", slug: "http-ssl" },
-      { d: "ssl_stapling", slug: "http-ssl" },
-      { d: "http2", slug: "http-v2" },
-      { d: "http3", slug: "http-v3" },
-    ],
+    chips: ["ssl_certificate", "ssl_session_cache", "ssl_stapling", "http2", "http3"],
   },
   {
     key: "stream",
@@ -223,13 +193,7 @@ server {
         ssl_preread  on;
     }
 }`,
-    chips: [
-      { d: "stream", slug: "stream-core" },
-      { d: "ssl_preread", slug: "stream-ssl-preread" },
-      { d: "proxy_pass", slug: "stream-proxy" },
-      { d: "map", slug: "stream-map" },
-      { d: "upstream", slug: "stream-upstream" },
-    ],
+    chips: ["stream", "ssl_preread", "proxy_pass", "map", "upstream"],
   },
   {
     key: "observe",
@@ -257,17 +221,11 @@ server {
         deny  all;
     }
 }`,
-    chips: [
-      { d: "log_format", slug: "http-log" },
-      { d: "access_log", slug: "http-log" },
-      { d: "stub_status", slug: "http-stub-status" },
-      { d: "otel_exporter", slug: "otel" },
-      { d: "otel_trace", slug: "otel" },
-    ],
+    chips: ["log_format", "access_log", "stub_status", "otel_exporter", "otel_trace"],
   },
 ];
 
-/* ========== 一条请求的一生 ========== */
+/* 一条请求的一生 */
 const PIPELINE = [
   { cmd: "accept", title: "收下连接", note: "事件循环从 epoll / kqueue 取出就绪的 socket" },
   { cmd: "ssl_handshake", title: "TLS 握手", note: "优先复用会话票据，1-RTT 甚至 0-RTT 完成" },
@@ -279,53 +237,59 @@ const PIPELINE = [
   { cmd: "sendfile", title: "回写响应", note: "零拷贝发送，gzip 只压缩该压缩的类型" },
 ];
 
-/* ========== 真实场景 ========== */
+/* 一套顶一套 */
+const REPLACE: [string, string][] = [
+  ["硬件 / 软件负载均衡器", "upstream app { least_conn; }"],
+  ["独立的反向代理进程", "proxy_pass http://app;"],
+  ["API 网关（限流 + 鉴权）", "limit_req …  auth_request /auth"],
+  ["静态缓存层（Varnish 之类）", "proxy_cache zone_a;"],
+  ["TLS 终结器", "listen 443 ssl;  listen 443 quic;"],
+  ["四层负载均衡 / 端口转发", "stream { proxy_pass …; }"],
+  ["静态文件服务器", "root /var/www;  sendfile on;"],
+  ["灰度 / A-B 分流组件", "split_clients $cookie_uid $ver { … }"],
+];
+
+/* 真实场景 */
 const SCENARIOS = [
   {
     tag: "静态与边缘",
     title: "前端产物与图片站",
     desc: "构建产物直接托管，gzip_static 吐预压缩文件；代理层再缓存一层，回源只发生在新版本发布那一刻。",
     cmd: "gzip_static on",
-    to: "/docs/getting-started",
   },
   {
     tag: "API 网关",
     title: "鉴权、限流、路由收在一处",
     desc: "auth_request 调用鉴权子请求，通过才放行；限流与改写写在同一个 location 里，微服务只关心自己的接口。",
     cmd: "auth_request /auth",
-    to: "/docs/modules/http-auth-request",
   },
   {
     tag: "微服务入口",
     title: "上游池与故障摘除",
     desc: "连接池复用长连接，proxy_next_upstream 在 502 / 超时后自动换节点，节点恢复后靠回探重新入池。",
     cmd: "proxy_next_upstream",
-    to: "/docs/load-balancing",
   },
   {
     tag: "灰度发布",
     title: "按比例切流做 A/B",
     desc: "split_clients 按百分比把流量切成两组，key 用 cookie 或 IP，同一个用户稳定命中同一版本。",
     cmd: "split_clients",
-    to: "/docs/modules/http-split-clients",
   },
   {
     tag: "长连接",
     title: "WebSocket 与 SSE",
     desc: "透传 Upgrade 头，放宽读超时，长连接就能穿过代理；心跳间隔由后端决定，nginx 只负责不掐断。",
     cmd: "proxy_read_timeout",
-    to: "/docs/websocket",
   },
   {
     tag: "四层",
     title: "数据库与 TCP 服务",
     desc: "MySQL、Redis、gRPC 走 stream 转发，按 SNI 或端口分流，顺便做一层来源白名单。",
     cmd: "proxy_protocol on",
-    to: "/docs/stream-processing",
   },
 ];
 
-/* ========== 平滑重载 ========== */
+/* 平滑重载 */
 const RELOAD_STEPS = [
   { t: "改配置", d: "只动需要动的 server / location，其余原样保留。" },
   { t: "nginx -t", d: "语法、证书路径、端口占用先校验；失败就停在这里，线上不受影响。" },
@@ -335,10 +299,36 @@ const RELOAD_STEPS = [
 
 const INSTALL_CMD = "sudo apt install nginx\nsudo systemctl enable --now nginx\ncurl -I localhost";
 
+/* 小节标题 */
+function SecHead({
+  idx,
+  kicker,
+  title,
+  desc,
+  dark,
+}: {
+  idx: string;
+  kicker: string;
+  title: string;
+  desc: string;
+  dark?: boolean;
+}) {
+  return (
+    <header className={`lp-sec-head ${dark ? "lp-on-dark" : ""}`}>
+      <span className="lp-kicker">
+        <b className="lp-kicker-n">{idx}</b>
+        {kicker}
+      </span>
+      <h2>{title}</h2>
+      <p>{desc}</p>
+    </header>
+  );
+}
+
 export default function Home() {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
-  const navigate = useNavigate();
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   async function copyInstall() {
     try {
@@ -350,11 +340,20 @@ export default function Home() {
     }
   }
 
+  function onTabKey(e: React.KeyboardEvent) {
+    const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!dir) return;
+    e.preventDefault();
+    const next = (tab + dir + CAPS.length) % CAPS.length;
+    setTab(next);
+    tabRefs.current[next]?.focus();
+  }
+
   const cap = CAPS[tab];
 
   return (
     <div className="lp">
-      {/* ================= HERO ================= */}
+      {/* ================= 01 HERO ================= */}
       <section className="lp-hero">
         <div className="lp-wrap">
           <div className="lp-hero-grid">
@@ -372,11 +371,16 @@ export default function Home() {
                 改一份 <code>nginx.conf</code>，就能重新编排整条链路。
               </p>
               <div className="lp-cta-row">
-                <Button appearance="primary" className="lp-btn-main" onClick={() => navigate("/docs/install")}>
-                  5 分钟装上 →
-                </Button>
-                <a href="#capabilities" className="lp-btn-ghost">
-                  看它能做什么
+                <a href="#capabilities" className="lp-btn-main">
+                  看它能做什么 ↓
+                </a>
+                <a
+                  href="https://nginx.org/en/download.html"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="lp-btn-ghost"
+                >
+                  下载 nginx ↗
                 </a>
               </div>
               <div className="lp-hero-note">
@@ -463,23 +467,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= 能力 ================= */}
+      {/* ================= 02 能力 ================= */}
       <section className="lp-section" id="capabilities">
         <div className="lp-wrap">
-          <div className="lp-sec-head">
-            <span className="lp-kicker">能力</span>
-            <h2>七种角色，一份配置</h2>
-            <p>
-              下面每一段都是能直接抄进 <code>nginx.conf</code> 的真实写法，不是伪代码。点开看它怎么把这件事做掉。
-            </p>
-          </div>
+          <SecHead
+            idx="01"
+            kicker="能力"
+            title="七种角色，一份配置"
+            desc="下面每一段都是能直接抄进 nginx.conf 的真实写法，不是伪代码。点开看它怎么把这件事做掉。"
+          />
 
-          <div className="lp-tabs" role="tablist" aria-label="能力分类">
+          <div className="lp-tabs" role="tablist" aria-label="能力分类" onKeyDown={onTabKey}>
             {CAPS.map((c, i) => (
               <button
                 key={c.key}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                id={`cap-tab-${c.key}`}
                 role="tab"
                 aria-selected={i === tab}
+                aria-controls="cap-panel"
+                tabIndex={i === tab ? 0 : -1}
                 className={`lp-tab ${i === tab ? "on" : ""}`}
                 onClick={() => setTab(i)}
               >
@@ -488,8 +497,13 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="lp-panel" role="tabpanel">
-            <div className="lp-panel-text">
+          <div
+            className="lp-panel"
+            role="tabpanel"
+            id="cap-panel"
+            aria-labelledby={`cap-tab-${cap.key}`}
+          >
+            <div className="lp-panel-text" key={cap.key}>
               <h3>{cap.title}</h3>
               <p>{cap.desc}</p>
               <ul className="lp-points">
@@ -497,11 +511,11 @@ export default function Home() {
                   <li key={p}>{p}</li>
                 ))}
               </ul>
-              <div className="lp-chips">
-                {cap.chips.map((c) => (
-                  <Link key={c.d + c.slug} to={`/docs/modules/${c.slug}`} className="lp-chip">
-                    {c.d}
-                  </Link>
+              <div className="lp-chips" aria-label="相关指令">
+                {cap.chips.map((d) => (
+                  <span key={d} className="lp-chip">
+                    {d}
+                  </span>
                 ))}
               </div>
             </div>
@@ -514,20 +528,49 @@ export default function Home() {
                   <i />
                 </span>
               </div>
-              <pre>{cap.code}</pre>
+              <pre key={cap.key}>{cap.code}</pre>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ================= 请求管道 ================= */}
+      {/* ================= 03 一套顶一套 ================= */}
+      <section className="lp-section lp-soft" id="coverage">
+        <div className="lp-wrap">
+          <SecHead
+            idx="02"
+            kicker="覆盖面"
+            title="它替掉的，是一整排中间件"
+            desc="同一份二进制把这些角色全收了：少一次网络跳转、少一个进程、少一套配置——故障点也就跟着少。"
+          />
+          <div className="lp-replace">
+            <div className="lp-replace-row lp-replace-head">
+              <span>没有 nginx 时得摆这些</span>
+              <span>现在写进 nginx.conf</span>
+            </div>
+            {REPLACE.map(([what, cmd]) => (
+              <div className="lp-replace-row" key={what}>
+                <span className="lp-replace-what">{what}</span>
+                <span className="lp-replace-arrow" aria-hidden>
+                  →
+                </span>
+                <code className="lp-replace-cmd">{cmd}</code>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= 04 请求管道 ================= */}
       <section className="lp-dark" id="pipeline">
         <div className="lp-wrap">
-          <div className="lp-sec-head lp-on-dark">
-            <span className="lp-kicker">一条请求的一生</span>
-            <h2>从 socket 到第一个字节</h2>
-            <p>每一环都能跳过，每一环都能配置。理解这条链，就理解了大部分线上问题的位置。</p>
-          </div>
+          <SecHead
+            dark
+            idx="03"
+            kicker="一条请求的一生"
+            title="从 socket 到第一个字节"
+            desc="每一环都能跳过，每一环都能配置。理解这条链，就理解了大半线上问题的位置。"
+          />
           <div className="lp-pipe">
             {PIPELINE.map((s, i) => (
               <div className="lp-pipe-step" key={s.cmd}>
@@ -541,14 +584,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= 为什么快 ================= */}
+      {/* ================= 05 为什么快 ================= */}
       <section className="lp-section" id="architecture">
         <div className="lp-wrap">
-          <div className="lp-sec-head">
-            <span className="lp-kicker">架构</span>
-            <h2>它不是“更快的 Apache”，是另一种模型</h2>
-            <p>性能差异不来自更聪明的代码，而来自不为什么都不做而付出代价。</p>
-          </div>
+          <SecHead
+            idx="04"
+            kicker="架构"
+            title="它不是“更快的 Apache”，是另一种模型"
+            desc="性能差异不来自更聪明的代码，而来自不为什么都不做而付出代价。"
+          />
 
           <div className="lp-vs">
             <div className="lp-vs-card bad">
@@ -582,8 +626,8 @@ export default function Home() {
             <div>
               <h3>把这两个数字调对，压测结果就变了</h3>
               <p>
-                默认值偏保守：<code>worker_connections</code> 是 512，进程数要手动指定。生产环境按 CPU 核数与 fd 上限重算一遍，
-                再打开 sendfile 与 tcp_nopush，静态文件的路径就短了一截。
+                默认值偏保守：<code>worker_connections</code> 是 512，进程数要手动指定。生产环境按 CPU 核数与 fd
+                上限重算一遍，再打开 sendfile 与 tcp_nopush，静态文件的路径就短了一截。
               </p>
               <ul className="lp-points">
                 <li>
@@ -625,40 +669,43 @@ http {
         </div>
       </section>
 
-      {/* ================= 场景 ================= */}
+      {/* ================= 06 场景 ================= */}
       <section className="lp-section lp-soft" id="scenarios">
         <div className="lp-wrap">
-          <div className="lp-sec-head">
-            <span className="lp-kicker">场景</span>
-            <h2>它真正被用来做什么</h2>
-            <p>同一个二进制，在这些位置上换成完全不同的配置——这大概就是它流行二十年的原因。</p>
-          </div>
+          <SecHead
+            idx="05"
+            kicker="场景"
+            title="它真正被用来做什么"
+            desc="同一个二进制，在这些位置上换成完全不同的配置——这大概就是它流行二十年的原因。"
+          />
           <div className="lp-scn-grid">
             {SCENARIOS.map((s, i) => (
-              <Link key={s.title} to={s.to} className="lp-scn">
-                <span className="lp-scn-tag">{s.tag}</span>
+              <div className="lp-scn" key={s.title}>
+                <div className="lp-scn-top">
+                  <span className="lp-scn-tag">{s.tag}</span>
+                  <span className="lp-scn-n">{String(i + 1).padStart(2, "0")}</span>
+                </div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
                 <div className="lp-scn-foot">
                   <code>{s.cmd}</code>
-                  <span>{String(i + 1).padStart(2, "0")}</span>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ================= 平滑重载 ================= */}
+      {/* ================= 07 平滑重载 ================= */}
       <section className="lp-section" id="reload">
         <div className="lp-wrap lp-reload">
           <div>
-            <span className="lp-kicker">运维</span>
-            <h2 className="lp-h2-tight">改配置，不用断连接</h2>
-            <p className="lp-sub">
-              这是 NGINX 最容易被低估的能力：reload 不是重启。master 只做一件事——让新 worker 接班，等老 worker
-              把手上的请求处理完再退场。
-            </p>
+            <SecHead
+              idx="06"
+              kicker="运维"
+              title="改配置，不用断连接"
+              desc="这是 NGINX 最容易被低估的能力：reload 不是重启。master 只做一件事——让新 worker 接班，等老 worker 把手上的请求处理完再退场。"
+            />
             <ol className="lp-steps">
               {RELOAD_STEPS.map((s, i) => (
                 <li key={s.t}>
@@ -693,7 +740,7 @@ kill -QUIT $(cat /run/nginx.pid.oldbin)   # 老 master 退出`}</pre>
         </div>
       </section>
 
-      {/* ================= 事实 ================= */}
+      {/* ================= 08 事实 ================= */}
       <section className="lp-facts">
         <div className="lp-wrap lp-facts-inner">
           {[
@@ -712,46 +759,26 @@ kill -QUIT $(cat /run/nginx.pid.oldbin)   # 老 master 退出`}</pre>
         </div>
       </section>
 
-      {/* ================= 开始 ================= */}
-      <section className="lp-start" id="start">
-        <div className="lp-wrap">
-          <div className="lp-start-inner">
-            <div>
-              <h2>装完之后，从这里往下走</h2>
-              <p>
-                本站把 nginx.org 的文档目录完整翻成中文：安装与调优、请求处理、负载均衡、TLS、四层代理，
-                直到每个模块的每条指令。
-              </p>
-              <div className="lp-quick">
-                <Link to="/docs/overview">什么是 NGINX</Link>
-                <Link to="/docs/how-it-works">它是怎么工作的</Link>
-                <Link to="/docs/load-balancing">负载均衡</Link>
-                <Link to="/docs/https">配置 HTTPS</Link>
-                <Link to="/docs/modules">模块参考</Link>
-              </div>
-            </div>
-            <div className="lp-start-cards">
-              <div className="lp-start-card">
-                <span className="lp-start-tag">第一步</span>
-                <b>装上并跑起来</b>
-                <pre>{INSTALL_CMD}</pre>
-                <div className="lp-start-actions">
-                  <button className="lp-mini-btn" onClick={copyInstall}>
-                    {copied ? "已复制 ✓" : "复制命令"}
-                  </button>
-                  <Link to="/docs/install">安装章节 →</Link>
-                </div>
-              </div>
-              <div className="lp-start-card">
-                <span className="lp-start-tag">查东西</span>
-                <b>按指令名直接搜</b>
-                <p>
-                  {MODULES.length} 个官方模块、{DIRECTIVE_INDEX.length} 条指令，每个都带官方页面锚点与最小示例。
-                </p>
-                <div className="lp-start-actions">
-                  <Link to="/docs/modules">打开模块参考 →</Link>
-                </div>
-              </div>
+      {/* ================= 09 收尾 ================= */}
+      <section className="lp-end">
+        <div className="lp-wrap lp-end-inner">
+          <div>
+            <span className="lp-kicker lp-on-dark">下一步</span>
+            <h2>起一个 worker，接住下一波流量</h2>
+            <p>安装是一次性的，配置是可以随时重排的——这就是它上线二十年还在主流的答案。</p>
+          </div>
+          <div className="lp-end-card">
+            <pre>{INSTALL_CMD}</pre>
+            <div className="lp-end-actions">
+              <button type="button" className="lp-mini-btn" onClick={copyInstall}>
+                {copied ? "已复制 ✓" : "复制命令"}
+              </button>
+              <a href="https://nginx.org/en/download.html" target="_blank" rel="noreferrer">
+                下载页 ↗
+              </a>
+              <a href="https://github.com/nginx/nginx" target="_blank" rel="noreferrer">
+                源码 ↗
+              </a>
             </div>
           </div>
         </div>
